@@ -14,7 +14,7 @@ const Nav = styled.nav`
   margin: 1rem 0 1rem 1rem;
   padding: 1rem;
   z-index: 1000;
-  height: 100%;
+  height: calc(100vh - 4rem);
   width: 16rem;
 `;
 
