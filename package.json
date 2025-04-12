@@ -4,8 +4,14 @@
   "version": "0.1.0",
   "private": false,
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-brands-svg-icons": "^6.7.2",
+    "@fortawesome/free-regular-svg-icons": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-router-dom": "^7.5.0",
     "react-scripts": "5.0.1",
     "styled-components": "^6.1.11"
   },
@@ -37,4 +43,3 @@
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   }
 }
-
