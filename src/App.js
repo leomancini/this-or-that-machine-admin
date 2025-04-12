@@ -12,13 +12,25 @@ import Pairs from "./pages/Pairs";
 import Votes from "./pages/Votes";
 import Device from "./pages/Device";
 import Login from "./pages/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Spinner from "./components/Spinner";
 
 const AppContainer = styled.div`
   display: flex;
   min-height: 100vh;
-  background-color: #f5f5f5;
   flex-direction: row;
   gap: 1rem;
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
 `;
 
 function App() {
@@ -56,24 +68,66 @@ function App() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!isAuthenticated) {
-    return <Login onLogin={handleLogin} />;
+    return (
+      <LoadingContainer>
+        <Spinner />
+      </LoadingContainer>
+    );
   }
 
   return (
     <Router>
-      <AppContainer>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Navigate to="/pairs" replace />} />
-          <Route path="/pairs" element={<Pairs />} />
-          <Route path="/votes" element={<Votes />} />
-          <Route path="/device" element={<Device />} />
-        </Routes>
-      </AppContainer>
+      <Routes>
+        <Route
+          path="/login"
+          element={
+            isAuthenticated ? (
+              <Navigate to="/pairs" />
+            ) : (
+              <Login onLogin={handleLogin} />
+            )
+          }
+        />
+        <Route
+          path="/*"
+          element={
+            isAuthenticated ? (
+              <AppContainer>
+                <Navbar />
+                <Routes>
+                  <Route path="/" element={<Navigate to="/pairs" />} />
+                  <Route
+                    path="/pairs"
+                    element={
+                      <ProtectedRoute isAuthenticated={isAuthenticated}>
+                        <Pairs />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/votes"
+                    element={
+                      <ProtectedRoute isAuthenticated={isAuthenticated}>
+                        <Votes />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/device"
+                    element={
+                      <ProtectedRoute isAuthenticated={isAuthenticated}>
+                        <Device />
+                      </ProtectedRoute>
+                    }
+                  />
+                </Routes>
+              </AppContainer>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+      </Routes>
     </Router>
   );
 }

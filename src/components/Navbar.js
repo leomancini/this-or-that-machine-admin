@@ -5,7 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faLink,
   faThumbsUp,
-  faMicrochip
+  faMicrochip,
+  faSignOutAlt
 } from "@fortawesome/free-solid-svg-icons";
 
 const Nav = styled.nav`
@@ -16,6 +17,8 @@ const Nav = styled.nav`
   z-index: 1000;
   height: calc(100vh - 4rem);
   width: 16rem;
+  display: flex;
+  flex-direction: column;
 `;
 
 const Header = styled.div`
@@ -34,16 +37,16 @@ const HeaderTitle = styled.h1`
   letter-spacing: -0.01em;
 `;
 
-const NavList = styled.ul`
-  list-style: none;
+const NavList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   margin: 0;
   padding: 0;
+  flex: 1;
 `;
 
-const NavItem = styled.li`
+const NavItem = styled.div`
   a {
     color: rgba(0, 0, 0, 0.5);
     font-size: 1.125rem;
@@ -77,6 +80,11 @@ const NavIcon = styled(FontAwesomeIcon)`
   font-size: 1.125rem;
   width: 1.25rem;
   height: 1.25rem;
+`;
+
+const LogoutSection = styled.div`
+  margin-top: auto;
+  padding-top: 1rem;
 `;
 
 const Navbar = () => {
@@ -120,6 +128,21 @@ const Navbar = () => {
           </Link>
         </NavItem>
       </NavList>
+      <LogoutSection>
+        <NavItem>
+          <Link
+            to="/logout"
+            className={location.pathname === "/logout" ? "selected" : ""}
+            onClick={() => {
+              localStorage.removeItem("apiKey");
+              window.location.href = "/login";
+            }}
+          >
+            <NavIcon icon={faSignOutAlt} />
+            Logout
+          </Link>
+        </NavItem>
+      </LogoutSection>
     </Nav>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Button from "../components/Button";
 import TextField from "../components/TextField";
@@ -31,11 +32,13 @@ const Title = styled.h1`
 
 const ErrorMessage = styled.p`
   color: #dc3545;
-  margin-top: 1rem;
+  margin-top: 2rem;
   text-align: center;
+  font-weight: 500;
 `;
 
 const Login = ({ onLogin }) => {
+  const navigate = useNavigate();
   const [apiKey, setApiKey] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -54,11 +57,14 @@ const Login = ({ onLogin }) => {
       if (data.valid) {
         localStorage.setItem("apiKey", apiKey);
         onLogin();
+        navigate("/pairs");
       } else {
-        setError(data.message || "Invalid API key");
+        setError("Sorry, something went wrong. Please try again.");
+        setApiKey("");
       }
     } catch (err) {
       setError("Sorry, something went wrong. Please try again.");
+      setApiKey("");
     } finally {
       setIsLoading(false);
     }
