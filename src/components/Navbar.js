@@ -120,11 +120,11 @@ const Navbar = () => {
         </NavItem>
         <NavItem>
           <Link
-            to="/device"
-            className={location.pathname === "/device" ? "selected" : ""}
+            to="/simulator"
+            className={location.pathname === "/simulator" ? "selected" : ""}
           >
             <NavIcon icon={faMicrochip} />
-            Device
+            Simulator
           </Link>
         </NavItem>
       </NavList>

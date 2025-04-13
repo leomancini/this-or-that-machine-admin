@@ -11,10 +11,10 @@ import isPropValid from "@emotion/is-prop-valid";
 import Navbar from "./components/Navbar";
 import Pairs from "./pages/Pairs";
 import Votes from "./pages/Votes";
-import Device from "./pages/Device";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Spinner from "./components/Spinner";
+import Simulator from "./pages/Simulator";
 
 const AppContainer = styled.div`
   display: flex;
@@ -136,10 +136,10 @@ function App() {
                       }
                     />
                     <Route
-                      path="/device"
+                      path="/simulator"
                       element={
                         <ProtectedRoute isAuthenticated={isAuthenticated}>
-                          <Device />
+                          <Simulator />
                         </ProtectedRoute>
                       }
                     />
