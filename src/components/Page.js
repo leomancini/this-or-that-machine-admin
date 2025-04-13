@@ -6,8 +6,10 @@ export default styled.div`
   font-size: 1rem;
   background-color: rgba(255, 255, 255, 1);
   border-radius: 1rem;
-  height: calc(100vh - 2rem);
+  height: calc(100vh - 6rem);
+  max-height: calc(100vh - 6rem);
   flex: 1;
   width: 100vw;
   overflow-y: scroll;
+  padding: 2rem;
 `;
