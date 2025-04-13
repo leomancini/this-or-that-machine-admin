@@ -6,7 +6,8 @@ import {
   Route,
   Navigate
 } from "react-router-dom";
-import styled from "styled-components";
+import styled, { StyleSheetManager } from "styled-components";
+import isPropValid from "@emotion/is-prop-valid";
 import Navbar from "./components/Navbar";
 import Pairs from "./pages/Pairs";
 import Votes from "./pages/Votes";
@@ -32,6 +33,21 @@ const LoadingContainer = styled.div`
   top: 0;
   left: 0;
 `;
+
+// Custom shouldForwardProp function that allows FontAwesome props
+const shouldForwardProp = (prop, defaultValidatorFn) => {
+  // Allow all FontAwesome props to pass through
+  if (
+    prop.startsWith("fa") ||
+    prop === "icon" ||
+    prop === "size" ||
+    prop === "color"
+  ) {
+    return true;
+  }
+  // Use the default validator for other props
+  return defaultValidatorFn(prop);
+};
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -69,66 +85,74 @@ function App() {
 
   if (isLoading) {
     return (
-      <LoadingContainer>
-        <Spinner />
-      </LoadingContainer>
+      <StyleSheetManager
+        shouldForwardProp={(prop) => shouldForwardProp(prop, isPropValid)}
+      >
+        <LoadingContainer>
+          <Spinner />
+        </LoadingContainer>
+      </StyleSheetManager>
     );
   }
 
   return (
-    <Router>
-      <Routes>
-        <Route
-          path="/login"
-          element={
-            isAuthenticated ? (
-              <Navigate to="/pairs" />
-            ) : (
-              <Login onLogin={handleLogin} />
-            )
-          }
-        />
-        <Route
-          path="/*"
-          element={
-            isAuthenticated ? (
-              <AppContainer>
-                <Navbar />
-                <Routes>
-                  <Route path="/" element={<Navigate to="/pairs" />} />
-                  <Route
-                    path="/pairs"
-                    element={
-                      <ProtectedRoute isAuthenticated={isAuthenticated}>
-                        <Pairs />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/votes"
-                    element={
-                      <ProtectedRoute isAuthenticated={isAuthenticated}>
-                        <Votes />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/device"
-                    element={
-                      <ProtectedRoute isAuthenticated={isAuthenticated}>
-                        <Device />
-                      </ProtectedRoute>
-                    }
-                  />
-                </Routes>
-              </AppContainer>
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-      </Routes>
-    </Router>
+    <StyleSheetManager
+      shouldForwardProp={(prop) => shouldForwardProp(prop, isPropValid)}
+    >
+      <Router>
+        <Routes>
+          <Route
+            path="/login"
+            element={
+              isAuthenticated ? (
+                <Navigate to="/pairs" />
+              ) : (
+                <Login onLogin={handleLogin} />
+              )
+            }
+          />
+          <Route
+            path="/*"
+            element={
+              isAuthenticated ? (
+                <AppContainer>
+                  <Navbar />
+                  <Routes>
+                    <Route path="/" element={<Navigate to="/pairs" />} />
+                    <Route
+                      path="/pairs"
+                      element={
+                        <ProtectedRoute isAuthenticated={isAuthenticated}>
+                          <Pairs />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/votes"
+                      element={
+                        <ProtectedRoute isAuthenticated={isAuthenticated}>
+                          <Votes />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/device"
+                      element={
+                        <ProtectedRoute isAuthenticated={isAuthenticated}>
+                          <Device />
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Routes>
+                </AppContainer>
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+        </Routes>
+      </Router>
+    </StyleSheetManager>
   );
 }
 

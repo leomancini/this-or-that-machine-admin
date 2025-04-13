@@ -51,7 +51,7 @@ const NavItem = styled.div`
     color: rgba(0, 0, 0, 0.5);
     font-size: 1.125rem;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: all 0.2s;
     display: flex;
     align-items: center;
     gap: 0.75rem;

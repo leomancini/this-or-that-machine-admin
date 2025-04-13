@@ -2,7 +2,12 @@ import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import Page from "../components/Page";
 import Spinner from "../components/Spinner";
+import ConfirmationDialog from "../components/ConfirmationDialog";
+import Dropdown from "../components/Dropdown";
 import useInfiniteScroll from "../hooks/useInfiniteScroll";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faClose } from "@fortawesome/free-solid-svg-icons";
+import Button from "../components/Button";
 
 const PairsContainer = styled.div`
   padding: 1.25rem;
@@ -13,13 +18,13 @@ const FiltersContainer = styled.div`
   gap: 1.25rem;
   margin-bottom: 1.25rem;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
 `;
 
-const FilterSelect = styled.select`
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.25rem;
-  border: 0.0625rem solid #ccc;
-  min-width: 9.375rem;
+const DropdownsContainer = styled.div`
+  display: flex;
+  gap: 1.25rem;
 `;
 
 const PairsGrid = styled.div`
@@ -33,18 +38,26 @@ const PairCard = styled.div`
   border: 2px solid rgba(0, 0, 0, 0.1);
   border-radius: 0.75rem;
   padding: 1rem;
-  transition: transform 0.3s;
+  transition: transform 0.2s;
+  position: relative;
+
+  &:hover .delete-button {
+    opacity: 1;
+  }
 `;
 
 const OptionsContainer = styled.div`
   display: flex;
-  gap: 0.625rem;
-  margin-bottom: 0.625rem;
+  gap: 1rem;
 `;
 
 const OptionContainer = styled.div`
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
 `;
 
 const ImageWrapper = styled.div`
@@ -65,54 +78,8 @@ const OptionImage = styled.img`
 
 const OptionInfo = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  margin-top: 0.3125rem;
-`;
-
-const PairInfo = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 0.625rem;
-  padding-top: 0.625rem;
-  border-top: 0.0625rem solid #eee;
-`;
-
-const DeleteButton = styled.button`
-  background-color: #ff4444;
-  color: white;
-  border: none;
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.25rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #cc0000;
-  }
-`;
-
-const ConfirmationDialog = styled.div`
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: white;
-  padding: 1.25rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 0.25rem 0.375rem rgba(0, 0, 0, 0.1);
-  z-index: 10000;
-`;
-
-const Overlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 9999;
 `;
 
 const LoadingContainer = styled.div`
@@ -128,6 +95,38 @@ const ErrorMessage = styled.div`
   padding: 1.25rem;
 `;
 
+const DeleteButton = styled.button`
+  position: absolute;
+  top: -0.75rem;
+  right: -0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: white;
+  background-color: rgb(154, 154, 154);
+  transition: all 0.2s;
+  opacity: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+  font-size: 1rem;
+
+  &:hover {
+    background-color: rgb(128, 128, 128);
+  }
+
+  &:active {
+    background-color: rgb(102, 102, 102);
+    transform: scale(0.95);
+  }
+`;
+
 const Pairs = () => {
   const [pairs, setPairs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -139,14 +138,53 @@ const Pairs = () => {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [pairToDelete, setPairToDelete] = useState(null);
+  const [typeOptions, setTypeOptions] = useState([]);
+  const [sourceOptions, setSourceOptions] = useState([]);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const getApiKey = () => {
-    const apiKey = localStorage.getItem("apiKey");
-    if (!apiKey) {
-      throw new Error("API key not found. Please log in first.");
+  // Fetch all available types and sources
+  const fetchOptions = useCallback(async () => {
+    try {
+      const apiKey = getApiKey();
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/get-metadata?key=${apiKey}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch metadata: ${response.statusText}`);
+      }
+
+      const { types, sources } = await response.json();
+
+      setTypeOptions(
+        types
+          .filter(Boolean)
+          .map((type) => ({
+            value: type,
+            label: type.charAt(0).toUpperCase() + type.slice(1)
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label))
+      );
+
+      setSourceOptions(
+        sources
+          .filter(Boolean)
+          .map((source) => ({
+            value: source,
+            label: source.charAt(0).toUpperCase() + source.slice(1)
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label))
+      );
+    } catch (err) {
+      console.error("Error fetching metadata:", err);
+      setError(err.message);
     }
-    return apiKey;
-  };
+  }, []);
+
+  // Fetch options when component mounts
+  useEffect(() => {
+    fetchOptions();
+  }, [fetchOptions]);
 
   const fetchPairs = useCallback(
     async (pageNum = 1, shouldAppend = false) => {
@@ -174,8 +212,6 @@ const Pairs = () => {
         }
 
         const data = await response.json();
-        console.log("Fetched pairs data:", data);
-
         setHasMore(data.length === 20);
 
         if (shouldAppend) {
@@ -195,13 +231,29 @@ const Pairs = () => {
 
   useEffect(() => {
     fetchPairs(1, false);
-  }, [fetchPairs]);
+  }, []);
+
+  const getApiKey = () => {
+    const apiKey = localStorage.getItem("apiKey");
+    if (!apiKey) {
+      throw new Error("API key not found. Please log in first.");
+    }
+    return apiKey;
+  };
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value
+    }));
     setPage(1);
   };
+
+  // Add effect to fetch when filters change
+  useEffect(() => {
+    fetchPairs(1, false);
+  }, [filters, fetchPairs]);
 
   const loadMore = () => {
     if (!loading && hasMore) {
@@ -234,12 +286,56 @@ const Pairs = () => {
         throw new Error(`Failed to delete pair: ${response.statusText}`);
       }
 
-      // Remove the deleted pair from the state
       setPairs((prevPairs) => prevPairs.filter((pair) => pair.id !== pairId));
       setPairToDelete(null);
     } catch (err) {
       console.error("Error deleting pair:", err);
       setError(err.message);
+    }
+  };
+
+  const handleGeneratePairsWithImages = async () => {
+    try {
+      setIsGenerating(true);
+      const apiKey = getApiKey();
+
+      // First generate pairs
+      const generateResponse = await fetch(
+        `${process.env.REACT_APP_API_URL}/generate-pairs?key=${apiKey}`,
+        {
+          method: "GET"
+        }
+      );
+
+      if (!generateResponse.ok) {
+        throw new Error(
+          `Failed to generate pairs: ${generateResponse.statusText}`
+        );
+      }
+
+      // Then add images
+      const addImagesResponse = await fetch(
+        `${process.env.REACT_APP_API_URL}/add-images?key=${apiKey}`,
+        {
+          method: "GET"
+        }
+      );
+
+      if (!addImagesResponse.ok) {
+        throw new Error(
+          `Failed to add images: ${addImagesResponse.statusText}`
+        );
+      }
+
+      // Reset pagination state and fetch first page
+      setPage(1);
+      setHasMore(true);
+      fetchPairs(1, false);
+    } catch (err) {
+      console.error("Error generating pairs with images:", err);
+      setError(err.message);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -265,27 +361,29 @@ const Pairs = () => {
     <Page>
       <PairsContainer>
         <FiltersContainer>
-          <FilterSelect
-            name="type"
-            value={filters.type}
-            onChange={handleFilterChange}
+          <DropdownsContainer>
+            <Dropdown
+              name="type"
+              value={filters.type}
+              onChange={handleFilterChange}
+              options={typeOptions}
+              placeholder="All Types"
+            />
+            <Dropdown
+              name="source"
+              value={filters.source}
+              onChange={handleFilterChange}
+              options={sourceOptions}
+              placeholder="All Sources"
+            />
+          </DropdownsContainer>
+          <Button
+            onClick={handleGeneratePairsWithImages}
+            isLoading={isGenerating}
+            variant="primary"
           >
-            <option value="">All Types</option>
-            <option value="brand">Brand</option>
-            <option value="animal">Animal</option>
-            <option value="food">Food</option>
-          </FilterSelect>
-
-          <FilterSelect
-            name="source"
-            value={filters.source}
-            onChange={handleFilterChange}
-          >
-            <option value="">All Sources</option>
-            <option value="logodev">LogoDev</option>
-            <option value="unsplash">Unsplash</option>
-            <option value="wikipedia">Wikipedia</option>
-          </FilterSelect>
+            Generate more pairs
+          </Button>
         </FiltersContainer>
 
         <PairsGrid>
@@ -294,6 +392,12 @@ const Pairs = () => {
               key={pair.id}
               ref={index === pairs.length - 1 ? lastElementRef : null}
             >
+              <DeleteButton
+                className="delete-button"
+                onClick={() => setPairToDelete(pair.id)}
+              >
+                <FontAwesomeIcon icon={faClose} />
+              </DeleteButton>
               <OptionsContainer>
                 {pair.options.map((option, optionIndex) => (
                   <OptionContainer key={optionIndex}>
@@ -311,50 +415,27 @@ const Pairs = () => {
                         }}
                       />
                     </ImageWrapper>
-                    <OptionInfo>
-                      <span>{option.value}</span>
-                      <span>Votes: {option.votes}</span>
-                    </OptionInfo>
                   </OptionContainer>
                 ))}
               </OptionsContainer>
-              <PairInfo>
-                <span>Type: {pair.type}</span>
-                <span>Source: {pair.source}</span>
-                <DeleteButton onClick={() => setPairToDelete(pair.id)}>
-                  Delete
-                </DeleteButton>
-              </PairInfo>
             </PairCard>
           ))}
         </PairsGrid>
 
-        {pairToDelete && (
-          <>
-            <Overlay onClick={() => setPairToDelete(null)} />
-            <ConfirmationDialog>
-              <h3>Are you sure you want to delete this pair?</h3>
-              <p>This action cannot be undone.</p>
-              <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
-                <DeleteButton onClick={() => handleDeletePair(pairToDelete)}>
-                  Yes, delete
-                </DeleteButton>
-                <button onClick={() => setPairToDelete(null)}>Cancel</button>
-              </div>
-            </ConfirmationDialog>
-          </>
-        )}
+        <ConfirmationDialog
+          isOpen={!!pairToDelete}
+          onClose={() => setPairToDelete(null)}
+          onConfirm={() => handleDeletePair(pairToDelete)}
+          title="Are you sure you want to delete this pair?"
+          confirmText="Delete"
+          cancelText="Cancel"
+          confirmVariant="danger"
+        />
 
         {loading && (
           <LoadingContainer>
             <Spinner />
           </LoadingContainer>
-        )}
-
-        {!hasMore && pairs.length > 0 && (
-          <div style={{ textAlign: "center", padding: "20px" }}>
-            No more pairs to load
-          </div>
         )}
 
         {!loading && pairs.length === 0 && (
