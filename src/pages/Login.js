@@ -72,9 +72,10 @@ const Login = ({ onLogin }) => {
 
   return (
     <LoginContainer>
-      <LoginForm onSubmit={handleSubmit}>
+      <LoginForm id="login-form" method="POST" onSubmit={handleSubmit}>
         <Title>This or That Machine</Title>
         <TextField
+          id="api-key"
           type="password"
           value={apiKey}
           onChange={(e) => setApiKey(e.target.value)}
