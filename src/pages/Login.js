@@ -79,6 +79,7 @@ const Login = ({ onLogin }) => {
           value={apiKey}
           onChange={(e) => setApiKey(e.target.value)}
           placeholder="Enter API key"
+          name="password"
           required
           disabled={isLoading}
           fullWidth
