@@ -85,7 +85,6 @@ const Login = ({ onLogin }) => {
           fullWidth
           autoFocus
           autoComplete="current-password"
-          data-1p-ignore
         />
         <Button type="submit" fullWidth isLoading={isLoading}>
           {isLoading ? "Logging in..." : "Login"}
