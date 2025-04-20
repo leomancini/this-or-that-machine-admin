@@ -4,6 +4,7 @@ import Page from "../components/Page";
 import FullPageLoadingContainer from "../components/FullPageLoadingContainer";
 import InfiniteScrollLoadingContainer from "../components/InfiniteScrollLoadingContainer";
 import useInfiniteScroll from "../hooks/useInfiniteScroll";
+import { getApiKey } from "../utils/apiKey";
 
 const ErrorMessage = styled.div`
   color: #dc3545;
@@ -147,7 +148,7 @@ const Votes = () => {
       } else {
         setLoading(true);
       }
-      const apiKey = localStorage.getItem("apiKey");
+      const apiKey = getApiKey();
       if (!apiKey) {
         throw new Error("No API key found");
       }

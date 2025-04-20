@@ -15,6 +15,7 @@ import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Spinner from "./components/Spinner";
 import Simulator from "./pages/Simulator";
+import TestSources from "./pages/TestSources";
 
 const AppContainer = styled.div`
   display: flex;
@@ -140,6 +141,14 @@ function App() {
                       element={
                         <ProtectedRoute isAuthenticated={isAuthenticated}>
                           <Simulator />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/test-sources"
+                      element={
+                        <ProtectedRoute isAuthenticated={isAuthenticated}>
+                          <TestSources />
                         </ProtectedRoute>
                       }
                     />

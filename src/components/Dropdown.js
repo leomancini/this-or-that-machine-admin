@@ -10,9 +10,9 @@ const DropdownContainer = styled.div`
 `;
 
 const StyledSelect = styled.select`
-  height: 3rem; /* 48px */
-  padding: 0 0.75rem;
-  min-width: 9.375rem;
+  height: 3rem;
+  padding: 0 1rem;
+  min-width: 10.5rem;
   background-color: rgba(0, 0, 0, 0.05);
   font-size: 1rem;
   border: none;

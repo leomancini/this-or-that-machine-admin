@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 
 const InputContainer = styled.div`
-  margin-bottom: 1rem;
+  flex: 1;
   width: ${(props) => (props.fullWidth ? "100%" : "auto")};
 `;
 

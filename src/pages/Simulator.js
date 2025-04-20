@@ -3,6 +3,7 @@ import Page from "../components/Page";
 import FullPageLoadingContainer from "../components/FullPageLoadingContainer";
 import Image from "../assets/DevicePhoto.jpg";
 import styled from "styled-components";
+import { getApiKey } from "../utils/apiKey";
 
 const SimulatorSection = styled.section`
   height: 100%;
@@ -98,14 +99,6 @@ const Simulator = () => {
   const [currentPairId, setCurrentPairId] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const getApiKey = () => {
-    const apiKey = localStorage.getItem("apiKey");
-    if (!apiKey) {
-      throw new Error("API key not found. Please log in first.");
-    }
-    return apiKey;
-  };
 
   const fetchOptions = async () => {
     try {

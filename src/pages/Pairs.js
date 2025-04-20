@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import Button from "../components/Button";
 import Spinner from "../components/Spinner";
+import { getApiKey } from "../utils/apiKey";
 
 const FiltersContainer = styled.div`
   display: flex;
@@ -29,7 +30,7 @@ const PairsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(18.75rem, 1fr));
   gap: 1.25rem;
-  margin-top: 1.25rem;
+  margin-top: 2rem;
 `;
 
 const PairCard = styled.div`
@@ -275,14 +276,6 @@ const Pairs = () => {
     fetchPairs(1, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const getApiKey = () => {
-    const apiKey = localStorage.getItem("apiKey");
-    if (!apiKey) {
-      throw new Error("API key not found. Please log in first.");
-    }
-    return apiKey;
-  };
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;

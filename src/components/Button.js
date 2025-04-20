@@ -3,6 +3,7 @@ import styled from "styled-components";
 
 const StyledButton = styled.button`
   width: ${(props) => (props.fullWidth ? "100%" : "auto")};
+  min-width: 10.5rem;
   height: 3rem; /* 48px */
   padding: 0 1rem;
   background-color: ${(props) => {

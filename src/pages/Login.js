@@ -22,11 +22,11 @@ const LoginForm = styled.form`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: 2rem;
 `;
 
 const Title = styled.h1`
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 1rem 0;
   text-align: center;
 `;
 

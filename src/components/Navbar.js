@@ -6,6 +6,7 @@ import {
   faLink,
   faThumbsUp,
   faMicrochip,
+  faImage,
   faSignOutAlt
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -125,6 +126,15 @@ const Navbar = () => {
           >
             <NavIcon icon={faMicrochip} />
             Simulator
+          </Link>
+        </NavItem>
+        <NavItem>
+          <Link
+            to="/test-sources"
+            className={location.pathname === "/test-sources" ? "selected" : ""}
+          >
+            <NavIcon icon={faImage} />
+            Test Sources
           </Link>
         </NavItem>
       </NavList>
