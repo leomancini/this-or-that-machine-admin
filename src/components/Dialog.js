@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import Button from "./Button";
-import { getButtonColors } from "../utils/buttonColors";
 
 const Overlay = styled.div`
   position: fixed;
@@ -13,7 +12,7 @@ const Overlay = styled.div`
   z-index: 9999;
 `;
 
-const Dialog = styled.div`
+const DialogContainer = styled.div`
   position: fixed;
   top: 50%;
   left: 50%;
@@ -35,6 +34,15 @@ const TitleAndMessageContainer = styled.div`
   flex-direction: column;
   gap: 0rem;
   margin-top: 1rem;
+  margin-bottom: 2rem;
+`;
+
+const ContentContainer = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
 `;
 
 const Title = styled.h3`
@@ -52,7 +60,6 @@ const Message = styled.p`
 const ButtonContainer = styled.div`
   display: flex;
   gap: 1rem;
-  margin-top: 2rem;
   flex: 1;
   width: 100%;
 `;
@@ -76,7 +83,7 @@ const Spinner = styled.div`
   }
 `;
 
-const ConfirmationDialog = ({
+const Dialog = ({
   isOpen,
   onClose,
   onConfirm,
@@ -85,7 +92,8 @@ const ConfirmationDialog = ({
   confirmText = "Confirm",
   cancelText = "Cancel",
   confirmVariant = "primary",
-  isLoading = false
+  isLoading = false,
+  children
 }) => {
   const [activeButton, setActiveButton] = useState(null);
 
@@ -123,11 +131,12 @@ const ConfirmationDialog = ({
   return (
     <>
       <Overlay onClick={isLoading ? undefined : onClose} />
-      <Dialog>
+      <DialogContainer>
         <TitleAndMessageContainer>
           <Title>{title}</Title>
           {message && <Message>{message}</Message>}
         </TitleAndMessageContainer>
+        {children && <ContentContainer>{children}</ContentContainer>}
         <ButtonContainer>
           <Button
             variant="secondary"
@@ -148,9 +157,9 @@ const ConfirmationDialog = ({
             {isLoading ? <Spinner /> : confirmText}
           </Button>
         </ButtonContainer>
-      </Dialog>
+      </DialogContainer>
     </>
   );
 };
 
-export default ConfirmationDialog;
+export default Dialog;

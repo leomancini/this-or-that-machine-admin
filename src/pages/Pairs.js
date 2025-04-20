@@ -3,7 +3,7 @@ import styled from "styled-components";
 import Page from "../components/Page";
 import FullPageLoadingContainer from "../components/FullPageLoadingContainer";
 import InfiniteScrollLoadingContainer from "../components/InfiniteScrollLoadingContainer";
-import ConfirmationDialog from "../components/ConfirmationDialog";
+import Dialog from "../components/Dialog";
 import Dropdown from "../components/Dropdown";
 import useInfiniteScroll from "../hooks/useInfiniteScroll";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -149,9 +149,19 @@ const Pairs = () => {
   const [typeOptions, setTypeOptions] = useState([]);
   const [sourceOptions, setSourceOptions] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isAddingImages, setIsAddingImages] = useState(false);
   const [validTypes, setValidTypes] = useState([]);
   const [selectedType, setSelectedType] = useState("all");
   const [count, setCount] = useState(1);
+  const [showGenerateDialog, setShowGenerateDialog] = useState(false);
+
+  // Reset dropdowns when generate dialog is shown
+  useEffect(() => {
+    if (showGenerateDialog) {
+      setSelectedType("all");
+      setCount(1);
+    }
+  }, [showGenerateDialog]);
 
   // Fetch all available types and sources
   const fetchOptions = useCallback(async () => {
@@ -376,8 +386,11 @@ const Pairs = () => {
       }));
 
       setPairs((prev) => [...newPairs, ...prev]);
+      // Close the dialog after generating pairs but before adding images
+      setShowGenerateDialog(false);
 
       // Add images to the newly generated pairs
+      setIsAddingImages(true);
       const addImagesResponse = await fetch(
         `${process.env.REACT_APP_API_URL}/pairs/add-images?key=${apiKey}`,
         {
@@ -398,6 +411,7 @@ const Pairs = () => {
       setError(err.message);
     } finally {
       setIsGenerating(false);
+      setIsAddingImages(false);
     }
   };
 
@@ -446,36 +460,12 @@ const Pairs = () => {
             placeholder="All Sources"
           />
         </DropdownsContainer>
-        <div style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}>
-          <Dropdown
-            name="generateType"
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            options={[
-              { value: "all", label: "All Types" },
-              ...validTypes.map((type) => ({
-                value: type,
-                label: type.charAt(0).toUpperCase() + type.slice(1)
-              }))
-            ]}
-          />
-          <Dropdown
-            name="count"
-            value={count}
-            onChange={(e) => setCount(Number(e.target.value))}
-            options={[
-              { value: 1, label: "1 pair" },
-              { value: 5, label: "5 pairs" },
-              { value: 10, label: "10 pairs" }
-            ]}
-          />
-          <Button
-            onClick={handleGeneratePairsWithImages}
-            disabled={isGenerating}
-          >
-            {isGenerating ? "Generating..." : "Generate Pairs"}
-          </Button>
-        </div>
+        <Button
+          onClick={() => setShowGenerateDialog(true)}
+          disabled={isAddingImages}
+        >
+          Generate new pairs
+        </Button>
       </FiltersContainer>
 
       <PairsGrid>
@@ -518,7 +508,7 @@ const Pairs = () => {
 
       {isLoadingMore && <InfiniteScrollLoadingContainer />}
 
-      <ConfirmationDialog
+      <Dialog
         isOpen={!!pairToDelete}
         onClose={() => setPairToDelete(null)}
         onConfirm={() => handleDeletePair(pairToDelete)}
@@ -528,6 +518,41 @@ const Pairs = () => {
         confirmVariant="destructive"
         isLoading={isDeleting}
       />
+
+      <Dialog
+        isOpen={showGenerateDialog}
+        onClose={() => setShowGenerateDialog(false)}
+        onConfirm={handleGeneratePairsWithImages}
+        title="Generate new pairs"
+        confirmText="Generate"
+        cancelText="Cancel"
+        isLoading={isGenerating}
+      >
+        <Dropdown
+          name="generateType"
+          value={selectedType}
+          onChange={(e) => setSelectedType(e.target.value)}
+          options={[
+            { value: "all", label: "Any type" },
+            ...validTypes.map((type) => ({
+              value: type,
+              label: type.charAt(0).toUpperCase() + type.slice(1)
+            }))
+          ]}
+          disabled={isGenerating}
+        />
+        <Dropdown
+          name="count"
+          value={count}
+          onChange={(e) => setCount(Number(e.target.value))}
+          options={[
+            { value: 1, label: "1 pair" },
+            { value: 5, label: "5 pairs" },
+            { value: 10, label: "10 pairs" }
+          ]}
+          disabled={isGenerating}
+        />
+      </Dialog>
 
       {pairs.length === 0 && (
         <div style={{ textAlign: "center", padding: "20px" }}>

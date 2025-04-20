@@ -11,6 +11,7 @@ const DropdownContainer = styled.div`
 
 const StyledSelect = styled.select`
   height: 3rem;
+  width: 100%;
   padding: 0 1rem;
   min-width: 10.5rem;
   background-color: rgba(0, 0, 0, 0.05);
