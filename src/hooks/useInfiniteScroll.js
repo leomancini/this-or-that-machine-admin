@@ -5,14 +5,12 @@ const useInfiniteScroll = ({ loading, hasMore, onLoadMore }) => {
   const lastElementRef = useRef();
 
   useEffect(() => {
-    if (loading) return;
-
     if (observer.current) {
       observer.current.disconnect();
     }
 
     observer.current = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && hasMore) {
+      if (entries[0].isIntersecting && hasMore && !loading) {
         onLoadMore();
       }
     });

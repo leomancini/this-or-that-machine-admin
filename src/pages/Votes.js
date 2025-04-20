@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import Page from "../components/Page";
-import LoadingContainer from "../components/LoadingContainer";
+import FullPageLoadingContainer from "../components/FullPageLoadingContainer";
+import InfiniteScrollLoadingContainer from "../components/InfiniteScrollLoadingContainer";
 import useInfiniteScroll from "../hooks/useInfiniteScroll";
 
 const ErrorMessage = styled.div`
@@ -134,13 +135,18 @@ const BarLabel = styled.div`
 const Votes = () => {
   const [votes, setVotes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
 
   const fetchVotes = useCallback(async (pageNum = 1, shouldAppend = false) => {
     try {
-      setLoading(true);
+      if (shouldAppend) {
+        setIsLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
       const apiKey = localStorage.getItem("apiKey");
       if (!apiKey) {
         throw new Error("No API key found");
@@ -177,7 +183,11 @@ const Votes = () => {
       console.error("Fetch error:", err);
       setError(err.message);
     } finally {
-      setLoading(false);
+      if (shouldAppend) {
+        setIsLoadingMore(false);
+      } else {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -186,14 +196,14 @@ const Votes = () => {
   }, [fetchVotes]);
 
   const loadMore = () => {
-    if (!loading && hasMore) {
+    if (!isLoadingMore && hasMore) {
       setPage((prev) => prev + 1);
       fetchVotes(page + 1, true);
     }
   };
 
   const { lastElementRef } = useInfiniteScroll({
-    loading,
+    loading: isLoadingMore,
     hasMore,
     onLoadMore: loadMore
   });
@@ -201,7 +211,7 @@ const Votes = () => {
   if (loading && votes.length === 0) {
     return (
       <Page>
-        <LoadingContainer />
+        <FullPageLoadingContainer />
       </Page>
     );
   }
@@ -270,7 +280,9 @@ const Votes = () => {
           );
         })}
       </VotesGrid>
-      {loading && votes.length > 0 && <LoadingContainer />}
+
+      {isLoadingMore && <InfiniteScrollLoadingContainer />}
+
       {!loading && votes.length === 0 && (
         <div style={{ textAlign: "center", padding: "1.25rem" }}>
           No votes found

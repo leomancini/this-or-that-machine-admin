@@ -6,12 +6,14 @@ const Container = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100%;
   width: 100%;
+  padding-top: 2rem;
 `;
 
-const LoadingContainer = ({ children }) => {
-  return <Container>{children || <Spinner />}</Container>;
-};
+const InfiniteScrollLoadingContainer = () => (
+  <Container>
+    <Spinner />
+  </Container>
+);
 
-export default LoadingContainer;
+export default InfiniteScrollLoadingContainer;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Page from "../components/Page";
-import LoadingContainer from "../components/LoadingContainer";
+import FullPageLoadingContainer from "../components/FullPageLoadingContainer";
 import Image from "../assets/DevicePhoto.jpg";
 import styled from "styled-components";
 
@@ -155,7 +155,7 @@ const Simulator = () => {
   return (
     <Page>
       {loading ? (
-        <LoadingContainer />
+        <FullPageLoadingContainer />
       ) : (
         <SimulatorSection>
           <SimulatorFrame>
