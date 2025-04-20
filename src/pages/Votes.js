@@ -2,15 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import Page from "../components/Page";
 import Spinner from "../components/Spinner";
+import LoadingContainer from "../components/LoadingContainer";
 import useInfiniteScroll from "../hooks/useInfiniteScroll";
-
-const LoadingContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  width: 100%;
-`;
 
 const ErrorMessage = styled.div`
   color: #dc3545;
@@ -209,9 +202,7 @@ const Votes = () => {
   if (loading && votes.length === 0) {
     return (
       <Page>
-        <LoadingContainer>
-          <Spinner />
-        </LoadingContainer>
+        <LoadingContainer />
       </Page>
     );
   }
@@ -280,11 +271,7 @@ const Votes = () => {
           );
         })}
       </VotesGrid>
-      {loading && votes.length > 0 && (
-        <LoadingContainer>
-          <Spinner />
-        </LoadingContainer>
-      )}
+      {loading && votes.length > 0 && <LoadingContainer />}
       {!loading && votes.length === 0 && (
         <div style={{ textAlign: "center", padding: "1.25rem" }}>
           No votes found

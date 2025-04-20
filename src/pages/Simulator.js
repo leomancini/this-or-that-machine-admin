@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Page from "../components/Page";
+import LoadingContainer from "../components/LoadingContainer";
 import Image from "../assets/DevicePhoto.jpg";
 import styled from "styled-components";
 
@@ -96,6 +97,7 @@ const Simulator = () => {
   const [options, setOptions] = useState(null);
   const [currentPairId, setCurrentPairId] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const getApiKey = () => {
     const apiKey = localStorage.getItem("apiKey");
@@ -107,6 +109,7 @@ const Simulator = () => {
 
   const fetchOptions = async () => {
     try {
+      setLoading(true);
       const apiKey = getApiKey();
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/get-random-pair?key=${apiKey}`
@@ -116,6 +119,8 @@ const Simulator = () => {
       setCurrentPairId(data.id);
     } catch (error) {
       console.error("Error fetching options:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -149,43 +154,47 @@ const Simulator = () => {
 
   return (
     <Page>
-      <SimulatorSection>
-        <SimulatorFrame>
-          <SimulatorAspectContainer>
-            <SimulatorImageContainer>
-              <OptionImageContainer
-                side="left"
-                aria-label="Option 1 Image"
-                isSelected={selectedOption === 1}
-              >
-                {options && (
-                  <OptionImage src={options[0].url} alt={options[0].value} />
-                )}
-              </OptionImageContainer>
-              <OptionImageContainer
-                side="right"
-                aria-label="Option 2 Image"
-                isSelected={selectedOption === 2}
-              >
-                {options && (
-                  <OptionImage src={options[1].url} alt={options[1].value} />
-                )}
-              </OptionImageContainer>
-              <SimulatorButton
-                side="left"
-                aria-label="Option 1 Button"
-                onClick={() => handleVote(1)}
-              />
-              <SimulatorButton
-                side="right"
-                aria-label="Option 2 Button"
-                onClick={() => handleVote(2)}
-              />
-              <SimulatorImage src={Image} alt="This or That Machine" />
-            </SimulatorImageContainer>
-          </SimulatorAspectContainer>
-        </SimulatorFrame>
-      </SimulatorSection>
+      {loading ? (
+        <LoadingContainer />
+      ) : (
+        <SimulatorSection>
+          <SimulatorFrame>
+            <SimulatorAspectContainer>
+              <SimulatorImageContainer>
+                <OptionImageContainer
+                  side="left"
+                  aria-label="Option 1 Image"
+                  isSelected={selectedOption === 1}
+                >
+                  {options && (
+                    <OptionImage src={options[0].url} alt={options[0].value} />
+                  )}
+                </OptionImageContainer>
+                <OptionImageContainer
+                  side="right"
+                  aria-label="Option 2 Image"
+                  isSelected={selectedOption === 2}
+                >
+                  {options && (
+                    <OptionImage src={options[1].url} alt={options[1].value} />
+                  )}
+                </OptionImageContainer>
+                <SimulatorButton
+                  side="left"
+                  aria-label="Option 1 Button"
+                  onClick={() => handleVote(1)}
+                />
+                <SimulatorButton
+                  side="right"
+                  aria-label="Option 2 Button"
+                  onClick={() => handleVote(2)}
+                />
+                <SimulatorImage src={Image} alt="This or That Machine" />
+              </SimulatorImageContainer>
+            </SimulatorAspectContainer>
+          </SimulatorFrame>
+        </SimulatorSection>
+      )}
     </Page>
   );
 };

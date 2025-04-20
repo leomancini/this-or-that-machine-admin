@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import Page from "../components/Page";
 import Spinner from "../components/Spinner";
+import LoadingContainer from "../components/LoadingContainer";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 import Dropdown from "../components/Dropdown";
 import useInfiniteScroll from "../hooks/useInfiniteScroll";
@@ -70,13 +71,6 @@ const OptionImage = styled.img`
   height: 100%;
   object-fit: cover;
   border-radius: 0.25rem;
-`;
-
-const LoadingContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 1.25rem;
 `;
 
 const ErrorMessage = styled.div`
@@ -422,11 +416,7 @@ const Pairs = () => {
         confirmVariant="danger"
       />
 
-      {loading && (
-        <LoadingContainer>
-          <Spinner />
-        </LoadingContainer>
-      )}
+      {loading && <LoadingContainer />}
 
       {!loading && pairs.length === 0 && (
         <div style={{ textAlign: "center", padding: "20px" }}>
