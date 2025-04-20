@@ -145,6 +145,7 @@ const Pairs = () => {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [pairToDelete, setPairToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [typeOptions, setTypeOptions] = useState([]);
   const [sourceOptions, setSourceOptions] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -306,6 +307,7 @@ const Pairs = () => {
 
   const handleDeletePair = async (pairId) => {
     try {
+      setIsDeleting(true);
       const apiKey = getApiKey();
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/pairs/delete-pair?id=${pairId}&key=${apiKey}`,
@@ -327,6 +329,8 @@ const Pairs = () => {
     } catch (err) {
       console.error("Error deleting pair:", err);
       setError(err.message);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -521,7 +525,8 @@ const Pairs = () => {
         title="Are you sure you want to delete this pair?"
         confirmText="Delete"
         cancelText="Cancel"
-        confirmVariant="danger"
+        confirmVariant="destructive"
+        isLoading={isDeleting}
       />
 
       {pairs.length === 0 && (

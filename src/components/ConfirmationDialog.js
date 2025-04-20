@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import Button from "./Button";
+import { getButtonColors } from "../utils/buttonColors";
 
 const Overlay = styled.div`
   position: fixed;
@@ -26,7 +27,7 @@ const Dialog = styled.div`
   align-items: center;
   gap: 1rem;
   width: 100%;
-  max-width: 20rem;
+  max-width: 24rem;
 `;
 
 const TitleAndMessageContainer = styled.div`
@@ -56,30 +57,21 @@ const ButtonContainer = styled.div`
   width: 100%;
 `;
 
-const StyledButton = styled(Button)`
-  flex: 1;
-  && {
-    background-color: ${(props) =>
-      props.variant === "danger"
-        ? "#dc3545"
-        : props.variant === "secondary"
-        ? "#6c757d"
-        : "#007bff"};
-    &:hover {
-      background-color: ${(props) =>
-        props.variant === "danger"
-          ? "#c82333"
-          : props.variant === "secondary"
-          ? "#5a6268"
-          : "#0056b3"};
+const Spinner = styled.div`
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #ffffff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 0.5rem;
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
     }
-    &:active {
-      background-color: ${(props) =>
-        props.variant === "danger"
-          ? "#b82532"
-          : props.variant === "secondary"
-          ? "#40464c"
-          : "#004085"};
+    100% {
+      transform: rotate(360deg);
     }
   }
 `;
@@ -92,25 +84,69 @@ const ConfirmationDialog = ({
   message,
   confirmText = "Confirm",
   cancelText = "Cancel",
-  confirmVariant = "danger"
+  confirmVariant = "primary",
+  isLoading = false
 }) => {
+  const [activeButton, setActiveButton] = useState(null);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (!isOpen || isLoading) return;
+
+      if (event.key === "Escape") {
+        setActiveButton("cancel");
+        setTimeout(() => {
+          onClose();
+        }, 100);
+      } else if (event.key === "Enter") {
+        setActiveButton("confirm");
+        setTimeout(() => {
+          onConfirm();
+        }, 100);
+      }
+    };
+
+    const handleKeyUp = () => {
+      setActiveButton(null);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [isOpen, onClose, onConfirm, isLoading]);
+
   if (!isOpen) return null;
 
   return (
     <>
-      <Overlay onClick={onClose} />
+      <Overlay onClick={isLoading ? undefined : onClose} />
       <Dialog>
         <TitleAndMessageContainer>
           <Title>{title}</Title>
           {message && <Message>{message}</Message>}
         </TitleAndMessageContainer>
         <ButtonContainer>
-          <StyledButton variant="secondary" onClick={onClose}>
+          <Button
+            variant="secondary"
+            onClick={isLoading ? undefined : onClose}
+            isActive={activeButton === "cancel"}
+            disabled={isLoading}
+            fullWidth
+          >
             {cancelText}
-          </StyledButton>
-          <StyledButton variant={confirmVariant} onClick={onConfirm}>
-            {confirmText}
-          </StyledButton>
+          </Button>
+          <Button
+            variant={confirmVariant}
+            onClick={isLoading ? undefined : onConfirm}
+            isActive={activeButton === "confirm"}
+            disabled={isLoading}
+            fullWidth
+          >
+            {isLoading ? <Spinner /> : confirmText}
+          </Button>
         </ButtonContainer>
       </Dialog>
     </>
