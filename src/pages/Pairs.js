@@ -391,107 +391,116 @@ const Pairs = () => {
 
   return (
     <Page>
-      <FiltersContainer>
-        <DropdownsContainer>
-          <Dropdown
-            name="type"
-            value={filters.type}
-            onChange={handleFilterChange}
-            options={[{ value: "", label: "All Types" }, ...typeOptions]}
-            placeholder="All Types"
-          />
-          <Dropdown
-            name="source"
-            value={filters.source}
-            onChange={handleFilterChange}
-            options={[{ value: "", label: "All Sources" }, ...sourceOptions]}
-            placeholder="All Sources"
-          />
-        </DropdownsContainer>
-        <div style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}>
-          <Dropdown
-            name="generateType"
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            options={[
-              { value: "all", label: "All Types" },
-              ...validTypes.map((type) => ({
-                value: type,
-                label: type.charAt(0).toUpperCase() + type.slice(1)
-              }))
-            ]}
-          />
-          <Dropdown
-            name="count"
-            value={count}
-            onChange={(e) => setCount(Number(e.target.value))}
-            options={[
-              { value: 1, label: "1 pair" },
-              { value: 5, label: "5 pairs" },
-              { value: 10, label: "10 pairs" }
-            ]}
-          />
-          <Button
-            onClick={handleGeneratePairsWithImages}
-            disabled={isGenerating}
-          >
-            {isGenerating ? "Generating..." : "Generate Pairs"}
-          </Button>
-        </div>
-      </FiltersContainer>
-
-      <PairsGrid>
-        {pairs.map((pair, index) => (
-          <PairCard
-            key={pair.id}
-            ref={index === pairs.length - 1 ? lastElementRef : null}
-          >
-            <DeleteButton
-              className="delete-button"
-              onClick={() => setPairToDelete(pair.id)}
+      {loading ? (
+        <LoadingContainer />
+      ) : (
+        <>
+          <FiltersContainer>
+            <DropdownsContainer>
+              <Dropdown
+                name="type"
+                value={filters.type}
+                onChange={handleFilterChange}
+                options={[{ value: "", label: "All Types" }, ...typeOptions]}
+                placeholder="All Types"
+              />
+              <Dropdown
+                name="source"
+                value={filters.source}
+                onChange={handleFilterChange}
+                options={[
+                  { value: "", label: "All Sources" },
+                  ...sourceOptions
+                ]}
+                placeholder="All Sources"
+              />
+            </DropdownsContainer>
+            <div
+              style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}
             >
-              <FontAwesomeIcon icon={faClose} />
-            </DeleteButton>
-            <OptionsContainer>
-              {pair.options.map((option, optionIndex) => (
-                <OptionContainer key={optionIndex}>
-                  <ImageWrapper>
-                    <OptionImage
-                      src={option.url}
-                      alt={option.value}
-                      loading="lazy"
-                      onError={(e) => {
-                        console.error(
-                          `Failed to load image for option ${optionIndex} of pair ${pair.id}:`,
-                          option.url
-                        );
-                        e.target.style.display = "none";
-                      }}
-                    />
-                  </ImageWrapper>
-                </OptionContainer>
-              ))}
-            </OptionsContainer>
-          </PairCard>
-        ))}
-      </PairsGrid>
+              <Dropdown
+                name="generateType"
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                options={[
+                  { value: "all", label: "All Types" },
+                  ...validTypes.map((type) => ({
+                    value: type,
+                    label: type.charAt(0).toUpperCase() + type.slice(1)
+                  }))
+                ]}
+              />
+              <Dropdown
+                name="count"
+                value={count}
+                onChange={(e) => setCount(Number(e.target.value))}
+                options={[
+                  { value: 1, label: "1 pair" },
+                  { value: 5, label: "5 pairs" },
+                  { value: 10, label: "10 pairs" }
+                ]}
+              />
+              <Button
+                onClick={handleGeneratePairsWithImages}
+                disabled={isGenerating}
+              >
+                {isGenerating ? "Generating..." : "Generate Pairs"}
+              </Button>
+            </div>
+          </FiltersContainer>
 
-      <ConfirmationDialog
-        isOpen={!!pairToDelete}
-        onClose={() => setPairToDelete(null)}
-        onConfirm={() => handleDeletePair(pairToDelete)}
-        title="Are you sure you want to delete this pair?"
-        confirmText="Delete"
-        cancelText="Cancel"
-        confirmVariant="danger"
-      />
+          <PairsGrid>
+            {pairs.map((pair, index) => (
+              <PairCard
+                key={pair.id}
+                ref={index === pairs.length - 1 ? lastElementRef : null}
+              >
+                <DeleteButton
+                  className="delete-button"
+                  onClick={() => setPairToDelete(pair.id)}
+                >
+                  <FontAwesomeIcon icon={faClose} />
+                </DeleteButton>
+                <OptionsContainer>
+                  {pair.options.map((option, optionIndex) => (
+                    <OptionContainer key={optionIndex}>
+                      <ImageWrapper>
+                        <OptionImage
+                          src={option.url}
+                          alt={option.value}
+                          loading="lazy"
+                          onError={(e) => {
+                            console.error(
+                              `Failed to load image for option ${optionIndex} of pair ${pair.id}:`,
+                              option.url
+                            );
+                            e.target.style.display = "none";
+                          }}
+                        />
+                      </ImageWrapper>
+                    </OptionContainer>
+                  ))}
+                </OptionsContainer>
+              </PairCard>
+            ))}
+          </PairsGrid>
 
-      {loading && <LoadingContainer />}
+          <ConfirmationDialog
+            isOpen={!!pairToDelete}
+            onClose={() => setPairToDelete(null)}
+            onConfirm={() => handleDeletePair(pairToDelete)}
+            title="Are you sure you want to delete this pair?"
+            confirmText="Delete"
+            cancelText="Cancel"
+            confirmVariant="danger"
+          />
 
-      {!loading && pairs.length === 0 && (
-        <div style={{ textAlign: "center", padding: "20px" }}>
-          No pairs found
-        </div>
+          {pairs.length === 0 && (
+            <div style={{ textAlign: "center", padding: "20px" }}>
+              No pairs found
+            </div>
+          )}
+        </>
       )}
     </Page>
   );
