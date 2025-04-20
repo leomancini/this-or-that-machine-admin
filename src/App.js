@@ -64,7 +64,7 @@ function App() {
 
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/validate-api-key?key=${storedApiKey}`
+          `${process.env.REACT_APP_API_URL}/auth/validate-api-key?key=${storedApiKey}`
         );
         const data = await response.json();
         setIsAuthenticated(data.valid);

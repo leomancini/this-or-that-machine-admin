@@ -112,7 +112,7 @@ const Simulator = () => {
       setLoading(true);
       const apiKey = getApiKey();
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/get-random-pair?key=${apiKey}`
+        `${process.env.REACT_APP_API_URL}/pairs/get-random-pair?key=${apiKey}`
       );
       const data = await response.json();
       setOptions(data.options);
@@ -129,13 +129,13 @@ const Simulator = () => {
       setSelectedOption(option);
       const apiKey = getApiKey();
       await fetch(
-        `${process.env.REACT_APP_API_URL}/vote?id=${currentPairId}&option=${option}&key=${apiKey}`
+        `${process.env.REACT_APP_API_URL}/votes/vote?id=${currentPairId}&option=${option}&key=${apiKey}`
       );
       // Wait for the border to be visible
       await new Promise((resolve) => setTimeout(resolve, 500));
       // Fetch new options first
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/get-random-pair?key=${apiKey}`
+        `${process.env.REACT_APP_API_URL}/pairs/get-random-pair?key=${apiKey}`
       );
       const data = await response.json();
       // Update both states together

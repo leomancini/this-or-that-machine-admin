@@ -50,7 +50,7 @@ const Login = ({ onLogin }) => {
 
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/validate-api-key?key=${apiKey}`
+        `${process.env.REACT_APP_API_URL}/auth/validate-api-key?key=${apiKey}`
       );
       const data = await response.json();
 

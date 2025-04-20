@@ -9,6 +9,7 @@ import useInfiniteScroll from "../hooks/useInfiniteScroll";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
 import Button from "../components/Button";
+import Spinner from "../components/Spinner";
 
 const FiltersContainer = styled.div`
   display: flex;
@@ -61,6 +62,12 @@ const ImageWrapper = styled.div`
   position: relative;
   width: 100%;
   padding-top: 100%;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const OptionImage = styled.img`
@@ -70,7 +77,21 @@ const OptionImage = styled.img`
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 0.25rem;
+  opacity: ${(props) => (props.loaded ? 1 : 0)};
+  transition: opacity 0.3s ease;
+`;
+
+const OptionImageLoadingContainer = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+`;
+
+const SmallSpinner = styled(Spinner)`
+  width: 2rem;
+  height: 2rem;
+  opacity: 0.25;
 `;
 
 const ErrorMessage = styled.div`
@@ -135,7 +156,7 @@ const Pairs = () => {
     try {
       const apiKey = getApiKey();
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/get-metadata?key=${apiKey}`
+        `${process.env.REACT_APP_API_URL}/metadata?key=${apiKey}`
       );
 
       if (!response.ok) {
@@ -179,7 +200,7 @@ const Pairs = () => {
     try {
       const apiKey = getApiKey();
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/get-valid-types?key=${apiKey}`
+        `${process.env.REACT_APP_API_URL}/metadata/valid-types?key=${apiKey}`
       );
 
       if (!response.ok) {
@@ -202,9 +223,7 @@ const Pairs = () => {
   const fetchPairs = useCallback(
     async (pageNum = 1, shouldAppend = false) => {
       try {
-        console.log("fetchPairs called", { pageNum, shouldAppend });
         if (shouldAppend) {
-          console.log("setting isLoadingMore to true");
           setIsLoadingMore(true);
         } else {
           setLoading(true);
@@ -219,7 +238,7 @@ const Pairs = () => {
         });
 
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/get-all-pairs?${queryParams}`
+          `${process.env.REACT_APP_API_URL}/pairs/get-all-pairs?${queryParams}`
         );
 
         if (response.status === 401) {
@@ -231,7 +250,6 @@ const Pairs = () => {
         }
 
         const data = await response.json();
-        console.log("received data", { length: data.length });
         setHasMore(data.length === 20);
 
         if (shouldAppend) {
@@ -244,7 +262,6 @@ const Pairs = () => {
         setError(err.message);
       } finally {
         if (shouldAppend) {
-          console.log("setting isLoadingMore to false");
           setIsLoadingMore(false);
         } else {
           setLoading(false);
@@ -282,9 +299,7 @@ const Pairs = () => {
   }, [filters, fetchPairs]);
 
   const loadMore = () => {
-    console.log("loadMore called", { isLoadingMore, hasMore });
     if (!isLoadingMore && hasMore) {
-      console.log("triggering load more");
       setPage((prev) => prev + 1);
       fetchPairs(page + 1, true);
     }
@@ -300,7 +315,7 @@ const Pairs = () => {
     try {
       const apiKey = getApiKey();
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/delete-pair?id=${pairId}&key=${apiKey}`,
+        `${process.env.REACT_APP_API_URL}/pairs/delete-pair?id=${pairId}&key=${apiKey}`,
         {
           method: "DELETE"
         }
@@ -329,7 +344,9 @@ const Pairs = () => {
       const apiKey = getApiKey();
 
       const endpoint =
-        selectedType === "all" ? "/generate-pairs" : "/generate-pairs-by-type";
+        selectedType === "all"
+          ? "/pairs/generate-pairs"
+          : "/pairs/generate-pairs-by-type";
 
       const queryParams = new URLSearchParams({
         key: apiKey,
@@ -365,7 +382,7 @@ const Pairs = () => {
 
       // Add images to the newly generated pairs
       const addImagesResponse = await fetch(
-        `${process.env.REACT_APP_API_URL}/add-images?key=${apiKey}`,
+        `${process.env.REACT_APP_API_URL}/pairs/add-images?key=${apiKey}`,
         {
           method: "GET"
         }
@@ -484,14 +501,16 @@ const Pairs = () => {
                       src={option.url}
                       alt={option.value}
                       loading="lazy"
-                      onError={(e) => {
-                        console.error(
-                          `Failed to load image for option ${optionIndex} of pair ${pair.id}:`,
-                          option.url
-                        );
-                        e.target.style.display = "none";
+                      loaded={option.url ? true : false}
+                      onLoad={(e) => {
+                        e.target.loaded = true;
                       }}
                     />
+                    {!option.url && (
+                      <OptionImageLoadingContainer>
+                        <SmallSpinner />
+                      </OptionImageLoadingContainer>
+                    )}
                   </ImageWrapper>
                 </OptionContainer>
               ))}

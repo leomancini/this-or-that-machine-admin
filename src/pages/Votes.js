@@ -158,8 +158,7 @@ const Votes = () => {
         offset: (pageNum - 1) * 20
       });
 
-      const url = `${process.env.REACT_APP_API_URL}/get-all-votes?${queryParams}`;
-      console.log("Fetching votes from:", url);
+      const url = `${process.env.REACT_APP_API_URL}/votes/get-all-votes?${queryParams}`;
 
       const response = await fetch(url);
       if (!response.ok) {
@@ -171,7 +170,6 @@ const Votes = () => {
       }
 
       const data = await response.json();
-      console.log("Received data:", data);
       setHasMore(data.votes.length === 20);
 
       if (shouldAppend) {
