@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import Page from "../components/Page";
-import Spinner from "../components/Spinner";
 import LoadingContainer from "../components/LoadingContainer";
 import useInfiniteScroll from "../hooks/useInfiniteScroll";
 

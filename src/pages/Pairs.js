@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import Page from "../components/Page";
-import Spinner from "../components/Spinner";
 import LoadingContainer from "../components/LoadingContainer";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 import Dropdown from "../components/Dropdown";
@@ -125,6 +124,9 @@ const Pairs = () => {
   const [typeOptions, setTypeOptions] = useState([]);
   const [sourceOptions, setSourceOptions] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [validTypes, setValidTypes] = useState([]);
+  const [selectedType, setSelectedType] = useState("all");
+  const [count, setCount] = useState(1);
 
   // Fetch all available types and sources
   const fetchOptions = useCallback(async () => {
@@ -169,6 +171,31 @@ const Pairs = () => {
   useEffect(() => {
     fetchOptions();
   }, [fetchOptions]);
+
+  // Fetch valid types from server
+  const fetchValidTypes = useCallback(async () => {
+    try {
+      const apiKey = getApiKey();
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/get-valid-types?key=${apiKey}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch valid types: ${response.statusText}`);
+      }
+
+      const { valid_types } = await response.json();
+      setValidTypes(valid_types);
+    } catch (err) {
+      console.error("Error fetching valid types:", err);
+      setError(err.message);
+    }
+  }, []);
+
+  // Fetch valid types when component mounts
+  useEffect(() => {
+    fetchValidTypes();
+  }, [fetchValidTypes]);
 
   const fetchPairs = useCallback(
     async (pageNum = 1, shouldAppend = false) => {
@@ -282,23 +309,45 @@ const Pairs = () => {
   const handleGeneratePairsWithImages = async () => {
     try {
       setIsGenerating(true);
+      setError(null);
       const apiKey = getApiKey();
 
-      // First generate pairs
-      const generateResponse = await fetch(
-        `${process.env.REACT_APP_API_URL}/generate-pairs?key=${apiKey}`,
-        {
-          method: "GET"
-        }
+      const endpoint =
+        selectedType === "all" ? "/generate-pairs" : "/generate-pairs-by-type";
+
+      const queryParams = new URLSearchParams({
+        key: apiKey,
+        count,
+        ...(selectedType !== "all" && { type: selectedType })
+      });
+
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}${endpoint}?${queryParams}`
       );
 
-      if (!generateResponse.ok) {
-        throw new Error(
-          `Failed to generate pairs: ${generateResponse.statusText}`
-        );
+      if (!response.ok) {
+        throw new Error(`Failed to generate pairs: ${response.statusText}`);
       }
 
-      // Then add images
+      const data = await response.json();
+      if (!data.inserted || !Array.isArray(data.inserted)) {
+        throw new Error("Invalid response format from server");
+      }
+
+      // Transform the inserted pairs into the format expected by the UI
+      const newPairs = data.inserted.map((pair) => ({
+        id: Math.random().toString(36).substring(2, 9), // Generate a temporary ID
+        type: pair.type,
+        source: pair.source,
+        options: [
+          { value: pair.option_1_value, url: "" },
+          { value: pair.option_2_value, url: "" }
+        ]
+      }));
+
+      setPairs((prev) => [...newPairs, ...prev]);
+
+      // Add images to the newly generated pairs
       const addImagesResponse = await fetch(
         `${process.env.REACT_APP_API_URL}/add-images?key=${apiKey}`,
         {
@@ -312,12 +361,10 @@ const Pairs = () => {
         );
       }
 
-      // Reset pagination state and fetch first page
-      setPage(1);
-      setHasMore(true);
+      // Refresh the pairs list to show the images
       fetchPairs(1, false);
     } catch (err) {
-      console.error("Error generating pairs with images:", err);
+      console.error("Error generating pairs:", err);
       setError(err.message);
     } finally {
       setIsGenerating(false);
@@ -350,24 +397,47 @@ const Pairs = () => {
             name="type"
             value={filters.type}
             onChange={handleFilterChange}
-            options={typeOptions}
+            options={[{ value: "", label: "All Types" }, ...typeOptions]}
             placeholder="All Types"
           />
           <Dropdown
             name="source"
             value={filters.source}
             onChange={handleFilterChange}
-            options={sourceOptions}
+            options={[{ value: "", label: "All Sources" }, ...sourceOptions]}
             placeholder="All Sources"
           />
         </DropdownsContainer>
-        <Button
-          onClick={handleGeneratePairsWithImages}
-          isLoading={isGenerating}
-          variant="primary"
-        >
-          Generate more pairs
-        </Button>
+        <div style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}>
+          <Dropdown
+            name="generateType"
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value)}
+            options={[
+              { value: "all", label: "All Types" },
+              ...validTypes.map((type) => ({
+                value: type,
+                label: type.charAt(0).toUpperCase() + type.slice(1)
+              }))
+            ]}
+          />
+          <Dropdown
+            name="count"
+            value={count}
+            onChange={(e) => setCount(Number(e.target.value))}
+            options={[
+              { value: 1, label: "1 pair" },
+              { value: 5, label: "5 pairs" },
+              { value: 10, label: "10 pairs" }
+            ]}
+          />
+          <Button
+            onClick={handleGeneratePairsWithImages}
+            disabled={isGenerating}
+          >
+            {isGenerating ? "Generating..." : "Generate Pairs"}
+          </Button>
+        </div>
       </FiltersContainer>
 
       <PairsGrid>

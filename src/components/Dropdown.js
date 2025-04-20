@@ -55,7 +55,6 @@ const Dropdown = ({
   onChange,
   name,
   disabled = false,
-  placeholder = "Select an option",
   ...props
 }) => {
   return (
@@ -68,7 +67,6 @@ const Dropdown = ({
           disabled={disabled}
           {...props}
         >
-          <option value="">{placeholder}</option>
           {options.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
